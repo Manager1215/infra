@@ -1,0 +1,5 @@
+---
+cloudflared_tunnel_name: homelab
+cloudflared_credentials_file: "/root/.cloudflared/{{ cloudflared_tunnel_id }}.json"
+
+cloudflared_ingress: []

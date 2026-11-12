@@ -1,3 +1,12 @@
 ---
 server_user: manager
 homelab_domain: nikitapavelko.dev
+
+cloudflared_tunnel_id: "{{ vault_cloudflared_tunnel_id }}"
+cloudflared_ingress:
+  - hostname: "grafana.{{ homelab_domain }}"
+    service: "http://localhost:{{ monitoring_grafana_port }}"
+  - hostname: "finanager.{{ homelab_domain }}"
+    service: "http://localhost:{{ finanager_web_port }}"
+  - hostname: "files.{{ homelab_domain }}"
+    service: "http://localhost:{{ files_port }}"
