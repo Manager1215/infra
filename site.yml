@@ -7,3 +7,4 @@
     - { role: docker, tags: [docker] }
     - { role: monitoring, tags: [monitoring] }
     - { role: finanager, tags: [finanager] }
+    - { role: files, tags: [files] }

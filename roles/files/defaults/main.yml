@@ -1,0 +1,8 @@
+---
+files_dir: "/home/{{ server_user }}/files"
+files_image: filebrowser/filebrowser:v2.32.0
+
+files_port: 8091
+
+files_uid: 1000
+files_gid: 1000

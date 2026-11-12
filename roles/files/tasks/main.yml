@@ -1,0 +1,32 @@
+---
+- name: Create File Browser directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ files_uid }}"
+    group: "{{ files_gid }}"
+    mode: "0755"
+  loop:
+    - "{{ files_dir }}"
+    - "{{ files_dir }}/data"
+
+# must exist before first start, otherwise docker mounts a directory here
+- name: Pre-create File Browser database
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ files_dir }}/database.db"
+    owner: "{{ files_uid }}"
+    group: "{{ files_gid }}"
+    mode: "0644"
+    force: false
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ files_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Start File Browser
+  community.docker.docker_compose_v2:
+    project_src: "{{ files_dir }}"
+    state: present
