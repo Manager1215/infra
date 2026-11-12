@@ -1,0 +1,3 @@
+---
+# copy to vault.yml, fill in, ansible-vault encrypt
+grafana_admin_password: "change-me"
