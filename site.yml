@@ -17,3 +17,4 @@
     - { role: base, tags: [base] }
     - { role: hardening, tags: [hardening] }
     - { role: static_sites, tags: [sites] }
+    - { role: kiln_site, tags: [sites, kiln] }

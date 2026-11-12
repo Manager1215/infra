@@ -1,0 +1,6 @@
+---
+- name: Restart kiln-accounts
+  ansible.builtin.systemd:
+    name: kiln-accounts
+    state: restarted
+    daemon_reload: true

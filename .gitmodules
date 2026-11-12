@@ -1,0 +1,4 @@
+[submodule "sites/horizon-kiln.cc"]
+	path = sites/horizon-kiln.cc
+	url = https://github.com/Manager1215/horizon-kiln-site.git
+	branch = main

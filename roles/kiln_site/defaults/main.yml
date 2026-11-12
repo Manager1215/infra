@@ -1,0 +1,13 @@
+---
+kiln_site_domain: horizon-kiln.cc
+kiln_site_aliases: [www.horizon-kiln.cc]
+kiln_site_root: /var/www/kiln
+
+kiln_site_src: "{{ playbook_dir }}/sites/horizon-kiln.cc"
+
+kiln_site_accounts_port: 8082
+kiln_site_accounts_user: kiln-accounts
+kiln_site_accounts_memory_max: 400M
+
+kiln_site_deploy_user: kiln-deploy
+kiln_site_deploy_keys: []

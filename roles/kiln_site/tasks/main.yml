@@ -1,0 +1,160 @@
+---
+- name: Deploy user
+  ansible.builtin.user:
+    name: "{{ kiln_site_deploy_user }}"
+    system: true
+    shell: /bin/sh
+    create_home: true
+
+- name: Deploy keys, limited to rsync into the web root
+  ansible.posix.authorized_key:
+    user: "{{ kiln_site_deploy_user }}"
+    path: "/home/{{ kiln_site_deploy_user }}/.ssh/authorized_keys"
+    key: "{{ kiln_site_deploy_keys | join('\n') }}"
+    key_options: 'command="/usr/bin/rrsync {{ kiln_site_root }}",restrict'
+    exclusive: true
+
+- name: Web root owned by the deploy user
+  ansible.builtin.file:
+    path: "{{ kiln_site_root }}"
+    state: directory
+    owner: "{{ kiln_site_deploy_user }}"
+    group: "{{ kiln_site_deploy_user }}"
+    mode: "0755"
+
+- name: Find files not owned by the deploy user
+  ansible.builtin.command:
+    cmd: find {{ kiln_site_root }} ! -user {{ kiln_site_deploy_user }} -print -quit
+  register: kiln_site_foreign
+  changed_when: false
+
+- name: Hand the web root to the deploy user
+  ansible.builtin.command:
+    cmd: chown -R {{ kiln_site_deploy_user }}:{{ kiln_site_deploy_user }} {{ kiln_site_root }}
+  when: kiln_site_foreign.stdout | length > 0
+  changed_when: true
+
+- name: Accounts service user
+  ansible.builtin.user:
+    name: "{{ kiln_site_accounts_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/kiln-accounts
+    create_home: false
+
+- name: Accounts config directory
+  ansible.builtin.file:
+    path: /etc/kiln-accounts
+    state: directory
+    owner: "{{ kiln_site_accounts_user }}"
+    group: "{{ kiln_site_accounts_user }}"
+    mode: "0700"
+
+# secrets are filled in by hand on the server
+- name: Accounts env file
+  ansible.builtin.copy:
+    content: ""
+    dest: /etc/kiln-accounts/env
+    owner: "{{ kiln_site_accounts_user }}"
+    group: "{{ kiln_site_accounts_user }}"
+    mode: "0600"
+    force: false
+
+- name: Install the accounts service
+  ansible.builtin.copy:
+    src: "{{ kiln_site_src }}/server/kiln-accounts.py"
+    dest: /usr/local/bin/kiln-accounts.py
+    mode: "0755"
+  notify: Restart kiln-accounts
+
+- name: Install the moderation command
+  ansible.builtin.copy:
+    src: "{{ kiln_site_src }}/server/kiln-accounts"
+    dest: /usr/local/bin/kiln-accounts
+    mode: "0755"
+
+- name: Accounts systemd unit
+  ansible.builtin.template:
+    src: kiln-accounts.service.j2
+    dest: /etc/systemd/system/kiln-accounts.service
+    mode: "0644"
+  notify: Restart kiln-accounts
+
+- name: Start the accounts service
+  ansible.builtin.systemd:
+    name: kiln-accounts
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Rate limits and the account log format
+  ansible.builtin.template:
+    src: nginx-limits.conf.j2
+    dest: /etc/nginx/conf.d/kiln-accounts.conf
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Check certificate
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ kiln_site_domain }}/fullchain.pem"
+  register: kiln_site_cert
+
+- name: Render nginx server block
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: /etc/nginx/sites-available/{{ kiln_site_domain }}.conf
+    mode: "0644"
+  vars:
+    kiln_site_has_cert: "{{ kiln_site_cert.stat.exists }}"
+  notify: Reload nginx
+
+- name: Enable server block
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ kiln_site_domain }}.conf
+    dest: /etc/nginx/sites-enabled/{{ kiln_site_domain }}.conf
+    state: link
+    force: "{{ ansible_check_mode }}"
+  notify: Reload nginx
+
+- name: Apply nginx changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Get a certificate
+  ansible.builtin.command:
+    cmd: >-
+      certbot certonly --webroot -w {{ static_sites_acme_root }}
+      --cert-name {{ kiln_site_domain }}
+      {% for name in [kiln_site_domain] + kiln_site_aliases %}-d {{ name }} {% endfor %}
+      --email {{ static_sites_certbot_email }} --agree-tos --non-interactive
+      --deploy-hook "systemctl reload nginx"
+    creates: "/etc/letsencrypt/live/{{ kiln_site_domain }}/fullchain.pem"
+  when: not kiln_site_cert.stat.exists
+
+# old cert was issued with --nginx, switch renewal to webroot
+- name: Check how the certificate renews
+  ansible.builtin.command:
+    cmd: grep -q '^authenticator = webroot' /etc/letsencrypt/renewal/{{ kiln_site_domain }}.conf
+  register: kiln_site_renewal
+  changed_when: false
+  failed_when: false
+
+- name: Renew through the webroot
+  ansible.builtin.command:
+    cmd: >-
+      certbot reconfigure --cert-name {{ kiln_site_domain }}
+      --webroot -w {{ static_sites_acme_root }}
+      --deploy-hook "systemctl reload nginx"
+  when: kiln_site_renewal.rc != 0
+  changed_when: true
+
+- name: Switch to HTTPS
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: /etc/nginx/sites-available/{{ kiln_site_domain }}.conf
+    mode: "0644"
+  vars:
+    kiln_site_has_cert: true
+  when:
+    - not kiln_site_cert.stat.exists
+    - not ansible_check_mode
+  notify: Reload nginx

@@ -8,3 +8,8 @@ static_sites:
   - domain: nikitapavelko.dev
     aliases: [www.nikitapavelko.dev]
     src: "{{ playbook_dir }}/sites/nikitapavelko.dev"
+
+kiln_site_deploy_keys:
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN0X7pqS+ovmZVc5KsiZHEM7KpekkV9QmZjTKGFFk5D6 kiln-site-deploy"
+
+static_sites_legacy_configs: [kiln]
