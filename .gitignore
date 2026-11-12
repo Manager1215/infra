@@ -1,0 +1,7 @@
+inventory/group_vars/*/vault.yml
+.vault_pass*
+*.pem
+*credentials*.json
+*.retry
+.DS_Store
+.ansible/
