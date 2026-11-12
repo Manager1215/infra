@@ -1,0 +1,7 @@
+---
+exclude_paths:
+  - .github/
+  - roles/monitoring/files/grafana/dashboards/
+  - sites/
+skip_list:
+  - var-naming[no-role-prefix]
