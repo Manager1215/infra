@@ -1,0 +1,10 @@
+---
+hardening_ssh_permit_root_login: "no"
+hardening_ssh_max_auth_tries: 3
+hardening_ssh_port: "{{ ansible_port | default(22) }}"
+
+hardening_fail2ban_maxretry: 5
+hardening_fail2ban_bantime: 1h
+hardening_fail2ban_findtime: 10m
+
+hardening_unattended_upgrades: true
