@@ -1,0 +1,15 @@
+---
+finanager_dir: "/home/{{ server_user }}/finanager"
+
+finanager_ghcr_user: "{{ github_user }}"
+finanager_ghcr_owner: "{{ github_user | lower }}"
+finanager_image_tag: latest
+
+finanager_postgres_image: postgres:16-alpine
+finanager_postgres_user: finanager
+finanager_postgres_db: finanager
+
+finanager_web_port: 8090
+finanager_web_url: "https://finanager.{{ homelab_domain }}"
+finanager_guest_history_days: 1
+finanager_resend_from: "Finanager <noreply@{{ homelab_domain }}>"

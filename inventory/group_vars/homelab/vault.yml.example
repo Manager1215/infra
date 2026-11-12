@@ -1,3 +1,10 @@
 ---
 # copy to vault.yml, fill in, ansible-vault encrypt
 grafana_admin_password: "change-me"
+
+finanager_postgres_password: "change-me"
+finanager_jwt_secret: "change-me"
+finanager_bot_token: "123456:telegram-bot-token"
+finanager_ghcr_token: "ghp_read-packages-token"
+finanager_resend_api_key: ""
+finanager_admin_ids: "123456789"
