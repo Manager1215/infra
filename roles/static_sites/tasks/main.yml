@@ -1,0 +1,52 @@
+---
+- name: Install nginx, certbot and rsync
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - certbot
+      - rsync
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Remove hand-written configs this role replaces
+  ansible.builtin.file:
+    path: "/etc/nginx/{{ item.0 }}/{{ item.1 }}"
+    state: absent
+  loop: "{{ ['sites-enabled', 'sites-available'] | product(static_sites_legacy_configs) | list }}"
+  notify: Reload nginx
+
+- name: Create ACME webroot
+  ansible.builtin.file:
+    path: "{{ static_sites_acme_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Reject TLS for unknown names
+  ansible.builtin.template:
+    src: reject-unknown-tls.conf.j2
+    dest: /etc/nginx/sites-available/000-reject-unknown-tls.conf
+    mode: "0644"
+  when: static_sites_reject_unknown_tls
+  notify: Reload nginx
+
+- name: Enable the reject block  # noqa: risky-file-permissions (a symlink, mode does not apply)
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/000-reject-unknown-tls.conf
+    dest: /etc/nginx/sites-enabled/000-reject-unknown-tls.conf
+    state: "{{ 'link' if static_sites_reject_unknown_tls else 'absent' }}"
+    force: "{{ ansible_check_mode }}"
+  notify: Reload nginx
+
+- name: Deploy each site
+  ansible.builtin.include_tasks: site.yml
+  loop: "{{ static_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.domain }}"
+
+- name: Start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true

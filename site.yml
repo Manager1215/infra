@@ -10,3 +10,10 @@
     - { role: finanager, tags: [finanager] }
     - { role: files, tags: [files] }
     - { role: cloudflared, tags: [cloudflared] }
+
+- name: VPS
+  hosts: vps
+  roles:
+    - { role: base, tags: [base] }
+    - { role: hardening, tags: [hardening] }
+    - { role: static_sites, tags: [sites] }

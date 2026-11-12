@@ -1,0 +1,70 @@
+---
+- name: "Create web root for {{ site.domain }}"
+  ansible.builtin.file:
+    path: "{{ static_sites_root }}/{{ site.domain }}"
+    state: directory
+    mode: "0755"
+
+- name: "Sync files for {{ site.domain }}"
+  ansible.posix.synchronize:
+    src: "{{ site.src }}/"
+    dest: "{{ static_sites_root }}/{{ site.domain }}/"
+    delete: true
+    recursive: true
+    rsync_opts:
+      - "--exclude=.DS_Store"
+
+- name: "Check certificate for {{ site.domain }}"
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ site.domain }}/fullchain.pem"
+  register: static_sites_cert
+
+# http only until the cert exists
+- name: "Render nginx server block for {{ site.domain }}"
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ site.domain }}.conf"
+    mode: "0644"
+  vars:
+    static_sites_has_cert: "{{ static_sites_cert.stat.exists }}"
+  notify: Reload nginx
+
+- name: "Enable server block for {{ site.domain }}"
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ site.domain }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ site.domain }}.conf"
+    state: link
+    force: "{{ ansible_check_mode }}"
+  notify: Reload nginx
+
+- name: Apply nginx changes before certbot
+  ansible.builtin.meta: flush_handlers
+
+- name: "Get a certificate for {{ site.domain }}"
+  ansible.builtin.command:
+    cmd: >-
+      certbot certonly --webroot -w {{ static_sites_acme_root }}
+      --cert-name {{ site.domain }}
+      {% for name in [site.domain] + site.aliases | default([]) %}-d {{ name }} {% endfor %}
+      --email {{ static_sites_certbot_email }} --agree-tos --non-interactive
+      --deploy-hook "systemctl reload nginx"
+    creates: "/etc/letsencrypt/live/{{ site.domain }}/fullchain.pem"
+  when:
+    - static_sites_certbot
+    - not static_sites_cert.stat.exists
+
+- name: "Switch to HTTPS for {{ site.domain }}"
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ site.domain }}.conf"
+    mode: "0644"
+  vars:
+    static_sites_has_cert: true
+  when:
+    - static_sites_certbot
+    - not static_sites_cert.stat.exists
+    - not ansible_check_mode
+  notify: Reload nginx
+
+- name: Apply HTTPS config
+  ansible.builtin.meta: flush_handlers

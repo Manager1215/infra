@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nikita Pavelko, DevOps / SRE</title>
+<meta name="description" content="Junior DevOps / SRE engineer in Dnipro, Ukraine. Ansible, Linux, monitoring, CI/CD.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="archivo-expanded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+<header class="top">
+  <h1>Nikita Pavelko</h1>
+  <p class="role">Junior DevOps / SRE engineer</p>
+  <ul class="contacts">
+    <li>Dnipro, Ukraine</li>
+    <li><a href="mailto:nekit08.pav@gmail.com">nekit08.pav@gmail.com</a></li>
+    <li>Telegram <a href="https://t.me/manager1215">@manager1215</a></li>
+    <li>GitHub <a href="https://github.com/Manager1215">Manager1215</a></li>
+  </ul>
+</header>
+
+<section aria-labelledby="profile-h">
+  <h2 id="profile-h">Profile</h2>
+  <div class="body">
+    <p>I keep servers running and write down how, in code. At AlaVatra that means the boxes behind AlaCraft and AlaMine: monitoring, backups, deploy checks, security fixes. At home it's an Ansible homelab. This page runs on a VPS I manage with the same Ansible.</p>
+  </div>
+</section>
+
+<section aria-labelledby="exp-h">
+  <h2 id="exp-h">Experience</h2>
+  <div class="body">
+    <article class="entry">
+      <h3>DevOps Engineer, Infrastructure &amp; QA</h3>
+      <p class="meta"><span>AlaVatra (AlaCraft, AlaMine)</span><span>Remote, since 2025</span></p>
+      <p>Web projects for the Minecraft community: a multilingual tools site and a game server portal. Hetzner Cloud and Cherry Servers, nginx and Apache, Laravel, Node.js, MySQL.</p>
+      <ul>
+        <li>Security: access-control audit and fixes on the PHP (DLE) site, gitleaks in CI, port and SSH tunnel audit.</li>
+        <li>Backups: automated MySQL dumps with integrity checks and rotation, offsite to AWS S3, provider snapshots. Restore tested.</li>
+        <li>Monitoring: healthchecks.io, UptimeRobot, Grafana Cloud (Alloy), alerts to Telegram.</li>
+        <li>CI/CD: GitHub Actions with self-hosted runners, auto-deploy, smoke tests.</li>
+        <li>Services: Node.js / Next.js moved from PM2 to systemd units.</li>
+        <li>Process: maintenance windows with rollback plans, change log, runbooks.</li>
+        <li>Edge: Cloudflare DNS, proxy, WAF.</li>
+      </ul>
+    </article>
+    <article class="entry">
+      <h3>Hardware and infrastructure</h3>
+      <p class="meta"><span>Personal</span><span>Since 2024</span></p>
+      <ul>
+        <li>5+ bare-metal servers assembled and set up for friends and home use: hardware, OS, network, UPS.</li>
+        <li>Home Assistant on Raspberry Pi.</li>
+      </ul>
+    </article>
+    <article class="entry">
+      <h3>Game mod developer</h3>
+      <p class="meta"><span>Freelance, remote</span><span>Since 2025</span></p>
+      <ul>
+        <li>Minecraft: custom mods on request. Ongoing.</li>
+        <li>Hytale: custom mods in a small team, about 3 months in 2025. Git feature-branch workflow, Jira. Project closed.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="proj-h">
+  <h2 id="proj-h">Projects</h2>
+  <div class="body">
+    <article class="entry">
+      <h3><a href="https://horizon-kiln.cc">Kiln</a></h3>
+      <p class="meta"><span>Open source, 2026</span><span><a href="https://github.com/Manager1215/horizon-kiln">source</a></span></p>
+      <h4>What it is</h4>
+      <p>Runs Java Fabric mods, unmodified, inside Horizon, the Rust rewrite of Minecraft 26.3. Nothing gets decompiled or patched: the jar runs as it is, and its calls into Minecraft and the Fabric API become calls into Horizon. About 65k lines of Rust and Java.</p>
+      <ul>
+        <li>Java runs as its own process next to the game, since Horizon doesn't allow unsafe code inside it.</li>
+        <li>Each mod gets a client tick 20 times a second with the game state, key presses and advancements. What it draws goes onto the HUD.</li>
+        <li>Coverage is measured, not guessed: a testbench of 139 probes over Minecraft and the Fabric API.</li>
+      </ul>
+      <h4>Behind it</h4>
+      <ul>
+        <li>557 commits and 127 merged PRs in two weeks. Private dev repo, public release repo, and the publish script stops a release that would leak anything. 120 decisions written down ADR-style.</li>
+        <li>5 GitHub Actions workflows: daily scan of the mod catalogue, nightly build, manual checks. Mod code from strangers runs in a network namespace with no network.</li>
+        <li>Burned through the free 2,000 Actions minutes. Found the push trigger that ate them and moved CI to self-hosted runners on my own 32-core Arch server.</li>
+        <li>The MacBook stays a work machine. Builds, tests and mod checks run on that server over SSH, and so does mutation testing (cargo-mutants plus custom Java mutants), which is far too heavy for a laptop. check.sh gives each run its own git worktree, writes step markers and picks up after a dropped connection.</li>
+        <li>That server sleeps when idle. Wake-on-LAN to wake it, a polkit rule to suspend it over SSH, a script that won't suspend while cargo, javac or gradle are running. Checked resume with an NVIDIA GPU.</li>
+        <li>Site on an Ubuntu VPS: nginx, Let's Encrypt, a small Python account service under systemd.</li>
+      </ul>
+    </article>
+    <article class="entry">
+      <h3><a href="https://github.com/Manager1215/infra">Infrastructure repo</a></h3>
+      <p class="meta"><span>2025 to now</span><span>The code that deployed this page</span></p>
+      <ul>
+        <li>Two hosts in Ansible: a Debian homelab behind a Cloudflare Tunnel with zero open ports, and an Ubuntu VPS.</li>
+        <li>Roles for SSH hardening (keys only, fail2ban, unattended upgrades), Docker, Prometheus and Grafana, static sites with Let's Encrypt. New site = one more entry in a list.</li>
+        <li>Every push: yamllint, ansible-lint on the production profile, syntax check.</li>
+      </ul>
+    </article>
+    <article class="entry">
+      <h3>Finanager</h3>
+      <p class="meta"><span>2026</span></p>
+      <p>A Telegram bot for my own finances. Python (aiogram), FastAPI, PostgreSQL, React, Docker. Built in GitHub Actions, deployed with Ansible.</p>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="skills-h">
+  <h2 id="skills-h">Skills</h2>
+  <div class="body">
+    <dl class="skills">
+      <dt>Linux</dt><dd>Debian 12, Ubuntu 24.04, Arch. systemd (units, timers, sandboxing), journald, apt, GRUB, Bash.</dd>
+      <dt>Web</dt><dd>nginx, Apache, PHP-FPM, aaPanel, Let's Encrypt. Hosting Laravel and Node.js / Next.js.</dd>
+      <dt>Cloud</dt><dd>Hetzner Cloud, Cherry Servers, AWS (S3, IAM), Cloudflare (DNS, proxy, WAF, Email Routing).</dd>
+      <dt>Automation</dt><dd>Ansible (roles, Vault), GitHub Actions, self-hosted runners, GitLab CI, gh CLI, Python.</dd>
+      <dt>Containers</dt><dd>Docker, Docker Compose, GHCR.</dd>
+      <dt>Databases</dt><dd>MySQL, MariaDB, PostgreSQL, SQLite. Dumps, restores, backups to S3.</dd>
+      <dt>Monitoring</dt><dd>Prometheus, Grafana, Grafana Cloud with Alloy, node-exporter, healthchecks.io, UptimeRobot.</dd>
+      <dt>Security</dt><dd>SSH keys only, ufw, fail2ban, gitleaks, Ansible Vault, 1Password, access-control review.</dd>
+      <dt>Testing</dt><dd>Smoke tests, cargo test, mutation testing with cargo-mutants.</dd>
+    </dl>
+  </div>
+</section>
+
+<section aria-labelledby="edu-h">
+  <h2 id="edu-h">Education</h2>
+  <div class="body">
+    <article class="entry">
+      <h3>Lyceum with enhanced military and physical training</h3>
+      <p class="meta"><span>Dnipro</span><span>Graduated 2026</span></p>
+      <ul>
+        <li>Picked to represent the lyceum at international events in The Hague and with NATO delegations.</li>
+        <li>Volunteered at DrukArmy.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="lang-h">
+  <h2 id="lang-h">Languages</h2>
+  <div class="body">
+    <p>English B2. Ukrainian and Russian, native.</p>
+  </div>
+</section>
+
+<section class="route" aria-labelledby="route-h">
+  <h2 id="route-h">How this page is deployed</h2>
+  <ol class="hops">
+    <li>
+      <span class="hop-name">git push</span>
+      <span class="hop-note">HTML and CSS in <a href="https://github.com/Manager1215/infra/tree/main/sites/nikitapavelko.dev">sites/nikitapavelko.dev</a></span>
+    </li>
+    <li>
+      <span class="hop-name"><code>ansible-playbook site.yml <span class="nw">--limit vps</span></code></span>
+      <span class="hop-note">role <a href="https://github.com/Manager1215/infra/tree/main/roles/static_sites">static_sites</a>: rsync, nginx block, certbot</span>
+    </li>
+    <li>
+      <span class="hop-name">VPS</span>
+      <span class="hop-note">Ubuntu, nginx, Let's Encrypt</span>
+    </li>
+    <li>
+      <span class="hop-name">your browser</span>
+      <span class="hop-note">TLS 1.3, HSTS, a strict CSP, no trackers, no JavaScript</span>
+    </li>
+  </ol>
+</section>
+
+</main>
+</body>
+</html>

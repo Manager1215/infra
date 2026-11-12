@@ -1,0 +1,240 @@
+@font-face {
+  font-family: "Archivo";
+  src: url("archivo.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Archivo Expanded";
+  src: url("archivo-expanded.woff2") format("woff2");
+  font-weight: 700 900;
+  font-display: swap;
+}
+
+:root {
+  --paper: #eef2f0;
+  --ink: #18221e;
+  --muted: #56645e;
+  --rule: #c5d0cb;
+  --link: #1d58b8;
+  --up: #2c8a52;
+  --off: #9aa5a0;
+  --route: #dfe6e2;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121a17;
+    --ink: #e2e9e5;
+    --muted: #91a098;
+    --rule: #2b3732;
+    --link: #8db2f2;
+    --up: #4fc07c;
+    --off: #5d6964;
+    --route: #1a2420;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1.0625rem/1.55 "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+body { margin: 0; }
+
+main {
+  max-width: 54rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 5.5rem) clamp(1.1rem, 4vw, 2.5rem) 4rem;
+}
+
+a { color: var(--link); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+
+code {
+  font: 0.9em/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Header: the name is the loudest thing on the page. */
+.top h1 {
+  font-family: "Archivo Expanded", "Archivo", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 8vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.role {
+  font-size: clamp(1.15rem, 2.6vw, 1.4rem);
+  margin: 0.6rem 0 1.1rem;
+}
+.contacts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.6rem;
+  color: var(--muted);
+}
+
+/* The deploy route at the bottom: horizontal on wide screens, vertical on phones. */
+.route {
+  margin: clamp(3rem, 7vw, 4.5rem) 0 0;
+  padding: 1.4rem clamp(1rem, 3vw, 1.6rem) 1.2rem;
+  background: var(--route);
+  border-radius: 6px;
+}
+.route h2 {
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1.1rem;
+}
+.hops {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0 1.2rem;
+  position: relative;
+}
+.hops li {
+  position: relative;
+  padding-top: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+/* the wire */
+.hops li::before {
+  content: "";
+  position: absolute;
+  top: 0.4rem;
+  left: 0;
+  right: -1.2rem;
+  border-top: 2px solid var(--ink);
+}
+.hops li:last-child::before { right: 0; }
+/* the node */
+.hops li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: var(--route);
+  border: 2px solid var(--ink);
+}
+.hops li:last-child::after { background: var(--ink); }
+.hop-name { font-weight: 700; overflow-wrap: anywhere; }
+.hop-note { color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+
+.hosts {
+  margin: 1.3rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.6rem;
+  font-size: 0.92rem;
+}
+.host { display: inline-flex; align-items: baseline; gap: 0.5rem; }
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex: none;
+  transform: translateY(-0.05rem);
+}
+.dot.up { background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 25%, transparent); }
+.dot.off { border: 2px solid var(--off); }
+
+@media (max-width: 44rem) {
+  .hops { grid-template-columns: 1fr; gap: 1rem; }
+  .hops li { padding: 0 0 0 1.7rem; }
+  .hops li::before { top: 0.45rem; bottom: -1.45rem; left: 0.4rem; right: auto; border-top: 0; border-left: 2px solid var(--ink); }
+  .hops li:last-child::before { display: none; }
+  .hops li::after { top: 0.2rem; }
+}
+
+/* Sections: heading in a narrow left column, content on the right. */
+section:not(.route) {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 0 2rem;
+  margin-top: clamp(2.4rem, 5vw, 3.4rem);
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+section:not(.route) > h2 {
+  font-family: "Archivo Expanded", "Archivo", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0.15rem 0 0;
+}
+.body { min-width: 0; max-width: 40rem; }
+.body > p:first-child { margin-top: 0; }
+
+.entry + .entry { margin-top: 1.9rem; }
+.entry h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+.entry h3 a { color: inherit; }
+.meta {
+  margin: 0.15rem 0 0.55rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.2rem;
+}
+.entry p:not(.meta) { margin: 0 0 0.5rem; }
+.entry ul { margin: 0; padding-left: 1.1rem; }
+.entry li + li { margin-top: 0.35rem; }
+.entry li::marker { color: var(--muted); }
+
+.skills {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.4rem;
+  margin: 0;
+}
+.skills dt { font-weight: 700; }
+.skills dd { margin: 0; }
+
+@media (max-width: 44rem) {
+  section:not(.route) { grid-template-columns: 1fr; }
+  section:not(.route) > h2 { margin-bottom: 0.8rem; }
+  .skills { grid-template-columns: 1fr; gap: 0; }
+  .skills dd { margin-bottom: 0.5rem; }
+}
+
+@media print {
+  :root { --paper: #fff; --ink: #000; --muted: #444; --rule: #bbb; --link: #000; }
+  html { font-size: 10.5pt; }
+  main { max-width: none; padding: 0; }
+  .route { display: none; }
+  section:not(.route) { break-inside: avoid-page; margin-top: 1.2rem; }
+  .entry { break-inside: avoid; }
+  a { text-decoration: none; }
+}
+.nw { white-space: nowrap; }
+
+.entry h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 1rem 0 0.35rem;
+}
+.entry h4 + p { margin-top: 0; }

@@ -1,0 +1,10 @@
+---
+server_user: root
+
+hardening_ssh_permit_root_login: prohibit-password
+
+static_sites_certbot_email: nekit08.pav@gmail.com
+static_sites:
+  - domain: nikitapavelko.dev
+    aliases: [www.nikitapavelko.dev]
+    src: "{{ playbook_dir }}/sites/nikitapavelko.dev"

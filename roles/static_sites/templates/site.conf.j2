@@ -1,0 +1,64 @@
+# {{ ansible_managed }}
+{% set names = [site.domain] + site.aliases | default([]) %}
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{ names | join(' ') }};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root {{ static_sites_acme_root }};
+        default_type text/plain;
+    }
+
+{% if static_sites_has_cert | bool %}
+    location / {
+        return 301 https://{{ site.domain }}$request_uri;
+    }
+{% else %}
+    root {{ static_sites_root }}/{{ site.domain }};
+    index index.html;
+{% endif %}
+}
+{% if static_sites_has_cert | bool %}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name {{ names | join(' ') }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ site.domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ site.domain }}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root {{ static_sites_root }}/{{ site.domain }};
+    index index.html;
+
+    # for renewals behind cloudflare "always use https"
+    location ^~ /.well-known/acme-challenge/ {
+        root {{ static_sites_acme_root }};
+        default_type text/plain;
+    }
+
+    add_header Strict-Transport-Security "max-age=63072000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "{{ site.csp | default("default-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'none'") }}" always;
+
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml application/json;
+
+    location / {
+{% if names | length > 1 %}
+        if ($host != {{ site.domain }}) {
+            return 301 https://{{ site.domain }}$request_uri;
+        }
+{% endif %}
+        try_files $uri $uri/ =404;
+    }
+
+    location ~* \.(css|js|woff2|svg|png|jpg|webp|ico)$ {
+        expires 30d;
+    }
+}
+{% endif %}

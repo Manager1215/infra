@@ -1,0 +1,16 @@
+---
+# - domain: example.dev
+#   aliases: [www.example.dev]
+#   src: "{{ playbook_dir }}/sites/example.dev"
+static_sites: []
+
+static_sites_root: /var/www
+static_sites_acme_root: /var/www/letsencrypt
+
+static_sites_certbot_email: ""
+
+static_sites_certbot: true
+
+static_sites_reject_unknown_tls: true
+
+static_sites_legacy_configs: []
